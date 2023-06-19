@@ -3,7 +3,7 @@ import sqlite3
 
 def main():
 
-    # define connection and cursor
+    # define connection and cursor (deveria usar o try block?????)
 
     db = sqlite3.connect('taskmaster.db')
 
@@ -18,34 +18,29 @@ def main():
                       )""")
 
     # call menu
-
     option = menu()
 
     # create a task
-
     if option == "C":
-        description = input("Type a new task: ")
-        # create a list of accepted status for tasks
-        status = input("Type new task status: ")
+        description, status = create_task()
         # find out how to insert creation date from the system
+        # deveria usar o try block aqui tb???
         cursor.execute("INSERT INTO tasks (description, status) VALUES (?, ?)", (description, status))
-        last_id = cursor.execute("SELECT last_insert_rowid()")
-        cursor.execute("SELECT * FROM tasks WHERE task_id = ?", last_id)
-        data = cursor.fetchone()
-        for column in data:
-            print(f"New task added: {column}")
+        db.commit()
+        data = cursor.execute("SELECT * FROM tasks")
+        data.fetchall()
+        for d in data:
+            print(d)
         
         
         
 
     # close connection with database
-
     db.close()
 
 
 def menu():
     # display the main menu
-
     option = input("Main menu\n \
     Press C to create a task;\n \
     Press V to view all tasks;\n \
@@ -56,6 +51,15 @@ def menu():
     Choose the option you want to run: ").upper()
     
     return option
+
+def create_task():
+
+    description = input("Type a new task: ")
+    # TODO: create a list of accepted status for tasks
+    status = input("Type new task status: ")
+
+    return description, status
+        
 
 
 main()
