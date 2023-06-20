@@ -22,16 +22,49 @@ def main():
 
     # create a task
     if option == "C":
-        description, status = create_task()
+        description = input("Type a new task: ")
         # find out how to insert creation date from the system
         # deveria usar o try block aqui tb???
-        cursor.execute("INSERT INTO tasks (description, status) VALUES (?, ?)", (description, status))
+        cursor.execute("INSERT INTO tasks (description, status) VALUES (?, ?)", (description, "incomplete"))
         conn.commit()
+        # retrieve id of last inserted task and select from database
         last_id = cursor.lastrowid
         cursor.execute("SELECT * FROM tasks WHERE task_id = ?", [last_id])
         data = cursor.fetchone()
+        # print new task added
         print("**********************************")
-        print(f"New task sucessfully added:\nId: {data[0]} Description: {data[1]} Status: {data[2]}")
+        print(f"New task sucessfully added:\nId:{data[0]} Description:{data[1]} Status:{data[2]}")
+
+    elif option == "V":
+        # view all tasks
+        cursor.execute("SELECT * FROM tasks")
+        data = cursor.fetchall()
+        print("**********************************")
+        print("Recorded tasks")
+        for row in data:
+            print(f"Id:{row[0]} Description:{row[1]} Status:{row[2]}")
+        
+        # filter tasks
+        option2 = input("Press F to filter this task list or\n Press M to return to the main menu: ").upper()
+        if option2 == "F":
+            filter = input("Press I to filter the task list by incompleted tasks only or\nPress C to filter by completed tasks only: ").upper()
+            if filter == "I":
+                filter = "incomplete"
+            elif filter == "C":
+                filter = "complete"
+            cursor.execute("SELECT * FROM tasks WHERE status = ?", [filter])
+            data = cursor.fetchall()
+            print("**********************************")
+            print("Recorded tasks")
+            for row in data:
+                print(f"Id:{row[0]} Description:{row[1]} Status:{row[2]}")
+        else:
+            menu()
+
+
+
+    
+
         
 
         
@@ -46,13 +79,13 @@ def main():
 
     # close connection with database
     conn.close()
-    # close cursor
+ 
 
 
 
 def menu():
     # display the main menu
-    option = input("Main menu\n\
+    option = input("Main menu\n \
     Press C to create a task;\n \
     Press V to view tasks;\n \
     Press U to update a task status;\n \
@@ -61,16 +94,7 @@ def menu():
     Press E to exit the program;\n \
     Choose the option you want to run: ").upper()
     
-    return option
-
-def create_task():
-
-    description = input("Type a new task: ")
-    # TODO: create a list of accepted status for tasks
-    status = input("Type new task status: ")
-
-    return description, status
-        
+    return option     
 
 if __name__ == '__main__':
     main()
