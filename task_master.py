@@ -41,60 +41,63 @@ def main():
         # view tasks
         elif option == "V":
             # view all tasks
-            cursor.execute("SELECT * FROM tasks")
-            data = cursor.fetchall()
-            print("**********************************")
-            print("Recorded tasks")
-            for row in data:
-                print(f"Id:{row[0]} Description:{row[1]} Status:{row[2]}")
+            view_tasks(cursor)
             
             # filter tasks
-            option2 = input("Press F to filter this task list or\n Press E to exit: ").upper()
-            if option2 == "F":
-                print("**************************")
-                filter = input("Press I to filter the task list by incompleted tasks only or\nPress C to filter by completed tasks only: ").upper()
-                if filter == "I":
-                    filter = "incomplete"
-                elif filter == "C":
-                    filter = "complete"
-                cursor.execute("SELECT * FROM tasks WHERE status = ?", [filter])
-                data = cursor.fetchall()
-                print("**********************************")
-                print("Recorded tasks")
-                for row in data:
-                    print(f"Id:{row[0]} Description:{row[1]} Status:{row[2]}")
-            else:
-                break
+            filter_tasks(cursor)
+           
 
         # update task status
         elif option == "U":
-            cursor.execute("SELECT * FROM tasks")
-            data = cursor.fetchall()
-            print("**********************************")
-            print("Recorded tasks")
-            for row in data:
-                print(f"Id:{row[0]} Description:{row[1]} Status:{row[2]}")
+            #view all tasks
+            view_tasks(cursor)
+            
             # prompt the user for the id of the task to update
-            while True:
-                id = int(input("Please provide the id of the task you'd like to update: "))
-                cursor.execute("SELECT task_id FROM tasks")
-                rows = [r[0] for r in cursor]
-                if id not in rows:
-                    print("Invalid id.")
-                else:
-                    break
-            # prompt the user for the new status and update on database
-            new_status = input("Type the new status of the task: ")
+            update = "update"
+            id = prompt_id(cursor, update)
+
+            # prompt the user for the new status and update database
+            new_status = input("Type the new status: ")
             cursor.execute("UPDATE tasks SET status = ? WHERE task_id = ?", (new_status, id))
             conn.commit()
+            
         
         # update task description
+        elif option == "M":
+            #view all tasks
+            view_tasks(cursor)
+
+            # prompt the user for the id of the task to update
+            update = "update"
+            id = prompt_id(cursor, update)
+
+            # prompt the user for the new description and update database
+            new_description = input("Type the new description: ")
+            cursor.execute("UPDATE tasks SET description = ? WHERE task_id = ?", (new_description, id))
+            conn.commit()
 
         # delete task
+        elif option == "D":
+            #view all tasks
+            view_tasks(cursor)
+
+            # prompt the user for the id of the task to update
+            delete = "delete"
+            id = prompt_id(cursor, delete)
+
+            # select task
+            cursor.execute("SELECT * FROM tasks WHERE task_id = ?", [id])
+            data = cursor.fetchone()
+            
+            # print task to be deleted and prompt the user for confirmation
+            confirm_delete(cursor, conn, data, id)
 
         # exit
-        else:
+        elif option == "E":
             break
+
+  
+    
        
         
         
@@ -117,6 +120,60 @@ def menu():
     Choose the option you want to run: ").upper()
     
     return option     
+
+def view_tasks(cursor):
+    #select and display all tasks
+    cursor.execute("SELECT * FROM tasks")
+    data = cursor.fetchall()
+    print("**********************************")
+    print("Recorded tasks")
+    for row in data:
+        print(f"Id:{row[0]} Description:{row[1]} Status:{row[2]}")
+
+def filter_tasks(cursor):
+    option = input("Press F to filter this task list or\n Press R to return to main menu: ").upper()
+    if option == "F":
+        print("**************************")
+        filter = input("Press I to filter the task list by incompleted tasks only or\nPress C to filter by completed tasks only: ").upper()
+        if filter == "I":
+            filter = "incomplete"
+        elif filter == "C":
+            filter = "complete"
+        cursor.execute("SELECT * FROM tasks WHERE status = ?", [filter])
+        data = cursor.fetchall()
+        print("**********************************")
+        print("Recorded tasks")
+        for row in data:
+            print(f"Id:{row[0]} Description:{row[1]} Status:{row[2]}")
+    else:
+        menu()
+
+
+def prompt_id(cursor, command):
+    # prompt the user for the id of the task to update
+    while True:
+        id = int(input(f"Please provide the id of the task you'd like to {command}: "))
+        cursor.execute("SELECT task_id FROM tasks")
+        rows = [r[0] for r in cursor]
+        if id not in rows:
+            print("Invalid id.")
+        else:
+            break
+    return id
+
+def confirm_delete(cursor, conn, data, id):
+    print("**********************************")
+    confirmation = input(f"Are you sure you want to delete\nId:{data[0]} Description:{data[1]} Status:{data[2]}? Y/N: ").upper()
+    if confirmation == "Y":
+        cursor.execute("DELETE FROM tasks WHERE task_id = ?", [id])
+        conn.commit()
+        print("Task sucessfully deleted")
+    else:
+        menu()
+    
+ 
+
+
 
 
 if __name__ == '__main__':
