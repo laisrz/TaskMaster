@@ -5,9 +5,9 @@ def main():
 
     # define connection and cursor (deveria usar o try block?????)
 
-    db = sqlite3.connect('taskmaster.db')
+    conn = sqlite3.connect('taskmaster.db')
 
-    cursor = db.cursor()
+    cursor = conn.cursor()
 
     # create tasks table
 
@@ -26,24 +26,35 @@ def main():
         # find out how to insert creation date from the system
         # deveria usar o try block aqui tb???
         cursor.execute("INSERT INTO tasks (description, status) VALUES (?, ?)", (description, status))
-        db.commit()
-        data = cursor.execute("SELECT * FROM tasks")
-        data.fetchall()
-        for d in data:
-            print(d)
+        conn.commit()
+        last_id = cursor.lastrowid
+        cursor.execute("SELECT * FROM tasks WHERE task_id = ?", [last_id])
+        data = cursor.fetchone()
+        print("**********************************")
+        print(f"New task sucessfully added:\nId: {data[0]} Description: {data[1]} Status: {data[2]}")
+        
+
+        
+
+        
+
+        
+
         
         
         
 
     # close connection with database
-    db.close()
+    conn.close()
+    # close cursor
+
 
 
 def menu():
     # display the main menu
-    option = input("Main menu\n \
+    option = input("Main menu\n\
     Press C to create a task;\n \
-    Press V to view all tasks;\n \
+    Press V to view tasks;\n \
     Press U to update a task status;\n \
     Press M to modify a task description;\n \
     Press D to delete a task;\n \
@@ -61,5 +72,5 @@ def create_task():
     return description, status
         
 
-
-main()
+if __name__ == '__main__':
+    main()
