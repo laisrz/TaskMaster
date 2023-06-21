@@ -4,7 +4,7 @@ from datetime import date
 
 def main():
 
-    # define connection and cursor (deveria usar o try block?????)
+    # define connection and cursor
 
     conn = sqlite3.connect('taskmaster.db')
 
@@ -124,14 +124,10 @@ def create_tasks(cursor, conn):
     cursor.execute("INSERT INTO tasks (description, status, creation_date) VALUES (?, ?, ?)", (description, "incomplete", creation_date))
     conn.commit()
 
-def print_task(cursor):
-    # retrieve id of last inserted task and select from database
-    last_id = cursor.lastrowid
-    cursor.execute("SELECT * FROM tasks WHERE task_id = ?", [last_id])
-    data = cursor.fetchone()
+def print_task(description):
     # print task
     print("**********************************")
-    print(f"New task sucessfully added:\nId:{data[0]} Description:{data[1]} Status:{data[2]} Creation date: {data[3]}")
+    print(f"New task sucessfully added:\nId:{data[0]} Description: {description} Status: incomplete Creation date: {data[3]}")
     print("**********************************")
 
 def view_tasks(cursor):
