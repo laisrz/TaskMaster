@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import date
 
 
 def main():
@@ -14,7 +15,8 @@ def main():
     cursor.execute("""CREATE TABLE IF NOT EXISTS tasks (
                         task_id INTEGER NOT NULL PRIMARY KEY,
                         description TEXT NOT NULL,
-                        status TEXT NOT NULL
+                        status TEXT NOT NULL,
+                        creation_date INTEGER NOT NULL
                       )""")
 
     # call menu
@@ -23,20 +25,11 @@ def main():
 
         # create a task
         if option == "C":
-            # prompt the user for the new task
-            description = input("Type a new task: ")
-            # find out how to insert creation date from the system
-            # deveria usar o try block aqui tb???
-            cursor.execute("INSERT INTO tasks (description, status) VALUES (?, ?)", (description, "incomplete"))
-            conn.commit()
-            # retrieve id of last inserted task and select from database
-            last_id = cursor.lastrowid
-            cursor.execute("SELECT * FROM tasks WHERE task_id = ?", [last_id])
-            data = cursor.fetchone()
+            # create new task
+            create_tasks(cursor, conn)
             # print new task added
-            print("**********************************")
-            print(f"New task sucessfully added:\nId:{data[0]} Description:{data[1]} Status:{data[2]}")
-            print("**********************************")
+            print_task(cursor)
+
 
         # view tasks
         elif option == "V":
@@ -60,7 +53,8 @@ def main():
             new_status = input("Type the new status: ")
             cursor.execute("UPDATE tasks SET status = ? WHERE task_id = ?", (new_status, id))
             conn.commit()
-            
+
+        
         
         # update task description
         elif option == "M":
@@ -121,6 +115,25 @@ def menu():
     
     return option     
 
+def create_tasks(cursor, conn):
+    # prompt the user for the new task
+    description = input("Type a new task: ")
+    # get the current date
+    creation_date = date.today()
+    # deveria usar o try block aqui tb???
+    cursor.execute("INSERT INTO tasks (description, status, creation_date) VALUES (?, ?, ?)", (description, "incomplete", creation_date))
+    conn.commit()
+
+def print_task(cursor):
+    # retrieve id of last inserted task and select from database
+    last_id = cursor.lastrowid
+    cursor.execute("SELECT * FROM tasks WHERE task_id = ?", [last_id])
+    data = cursor.fetchone()
+    # print task
+    print("**********************************")
+    print(f"New task sucessfully added:\nId:{data[0]} Description:{data[1]} Status:{data[2]} Creation date: {data[3]}")
+    print("**********************************")
+
 def view_tasks(cursor):
     #select and display all tasks
     cursor.execute("SELECT * FROM tasks")
@@ -128,7 +141,7 @@ def view_tasks(cursor):
     print("**********************************")
     print("Recorded tasks")
     for row in data:
-        print(f"Id:{row[0]} Description:{row[1]} Status:{row[2]}")
+        print(f"Id:{row[0]} Description:{row[1]} Status:{row[2]} Creation date:{row[3]}")
 
 def filter_tasks(cursor):
     option = input("Press F to filter this task list or\n Press R to return to main menu: ").upper()
@@ -144,7 +157,7 @@ def filter_tasks(cursor):
         print("**********************************")
         print("Recorded tasks")
         for row in data:
-            print(f"Id:{row[0]} Description:{row[1]} Status:{row[2]}")
+            print(f"Id:{row[0]} Description:{row[1]} Status:{row[2]} Creation date:{row[3]}")
     else:
         menu()
 
@@ -163,7 +176,7 @@ def prompt_id(cursor, command):
 
 def confirm_delete(cursor, conn, data, id):
     print("**********************************")
-    confirmation = input(f"Are you sure you want to delete\nId:{data[0]} Description:{data[1]} Status:{data[2]}? Y/N: ").upper()
+    confirmation = input(f"Are you sure you want to delete\nId:{data[0]} Description:{data[1]} Status:{data[2]} Creation date:{data[3]}? Y/N: ").upper()
     if confirmation == "Y":
         cursor.execute("DELETE FROM tasks WHERE task_id = ?", [id])
         conn.commit()
