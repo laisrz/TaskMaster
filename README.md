@@ -30,3 +30,18 @@
 * The main menu should present options for creating a new task, viewing the task list, updating task status, modifying task description, or deleting a task.
 * Depending on the selected option, the app should guide the user through the necessary steps, such as prompting for inputs or displaying the relevant information.
 * After performing the requested action, the app should return to the main menu, allowing the user to choose another option or exit the app.
+
+
+## Development
+
+Create a _virtualenv_
+
+```
+python -m venv .venv
+```
+
+Activate _virtualenv_
+
+```
+source .venv/bin/activate
+```
