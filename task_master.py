@@ -24,15 +24,17 @@ def main():
         option = menu()
 
         # create a task
-        if option == "C":
-            # create new task
-            create_tasks(cursor, conn)
+        if option == "c":
+            # prompt task from the user
+            new_description, date = prompt_task()
+            # insert task on database
+            insert_task(cursor, conn, new_description, date)
             # print new task added
-            print_task(cursor)
+            print_task(new_description, date)
 
 
         # view tasks
-        elif option == "V":
+        elif option == "v":
             # view all tasks
             view_tasks(cursor)
             
@@ -41,7 +43,7 @@ def main():
            
 
         # update task status
-        elif option == "U":
+        elif option == "u":
             #view all tasks
             view_tasks(cursor)
             
@@ -57,7 +59,7 @@ def main():
         
         
         # update task description
-        elif option == "M":
+        elif option == "m":
             #view all tasks
             view_tasks(cursor)
 
@@ -71,7 +73,7 @@ def main():
             conn.commit()
 
         # delete task
-        elif option == "D":
+        elif option == "d":
             #view all tasks
             view_tasks(cursor)
 
@@ -87,7 +89,7 @@ def main():
             confirm_delete(cursor, conn, data, id)
 
         # exit
-        elif option == "E":
+        elif option == "e":
             break
 
   
@@ -111,23 +113,27 @@ def menu():
     Press M to modify a task description;\n \
     Press D to delete a task;\n \
     Press E to exit the program;\n \
-    Choose the option you want to run: ").upper()
+    Choose the option you want to run: ").lower()
     
     return option     
 
-def create_tasks(cursor, conn):
+def prompt_task():
     # prompt the user for the new task
     description = input("Type a new task: ")
     # get the current date
     creation_date = date.today()
-    # deveria usar o try block aqui tb???
+    return description, creation_date
+    
+    
+def insert_task(cursor, conn, description, creation_date):
     cursor.execute("INSERT INTO tasks (description, status, creation_date) VALUES (?, ?, ?)", (description, "incomplete", creation_date))
     conn.commit()
+    
 
-def print_task(description):
+def print_task(description, date):
     # print task
     print("**********************************")
-    print(f"New task sucessfully added:\nId:{data[0]} Description: {description} Status: incomplete Creation date: {data[3]}")
+    print(f"New task sucessfully added:\n Description: {description} Status: incomplete Creation date: {date}")
     print("**********************************")
 
 def view_tasks(cursor):
