@@ -26,30 +26,33 @@ def main():
         # create a task
         if option == "c":
             # prompt task from the user
-            new_description, date = prompt_task()
+            new_description = prompt_task()
             # insert task on database
-            insert_task(cursor, conn, new_description, date)
+            insert_task(cursor, conn, new_description)
             # print new task added
-            print_new_task(new_description, date)
+            print_new_task(new_description)
 
 
         # view tasks
         elif option == "v":
-            # view all tasks
-            data = view_tasks(cursor)
+            # select and print all tasks
+            data = select_all_tasks(cursor)
             print_tasks(data)
             
             # filter tasks
+            #prompt the user to filter and choose which status to filter
             option = prompt_filter()
             status = prompt_status()
+            # select data based on the status the user selected
             data = filter_tasks(cursor, option, status)
+            #print tasks
             print_tasks(data)
            
 
         # update task status
         elif option == "u":
             #view all tasks
-            data = view_tasks(cursor)
+            data = select_all_tasks(cursor)
             print_tasks(data)
             
             # prompt the user for the id of the task to update
@@ -66,7 +69,7 @@ def main():
         # update task description
         elif option == "m":
             #view all tasks
-            data = view_tasks(cursor)
+            data = select_all_tasks(cursor)
             print_tasks(data)
 
             # prompt the user for the id of the task to update
@@ -83,17 +86,17 @@ def main():
         # delete task
         elif option == "d":
             #view all tasks
-            data = view_tasks(cursor)
+            data = select_all_tasks(cursor)
             print_tasks(data)
 
             # prompt the user for the id of the task to update
             id = prompt_id(cursor, "delete")
 
             # select task
-            data = select_task(cursor, id)
+            data = select_one_task(cursor, id)
             
             # print task to be deleted and prompt the user for confirmation
-            confirmation = confirm_deletion(data)
+            confirmation = prompt_delete(data)
             # delete task
             delete_task(cursor, conn, confirmation, id)
 
@@ -131,29 +134,26 @@ def menu():
 
 def prompt_task():
     # prompt the user for the new task
-    description = input("Type a new task: ")
-    # get the current date
-    creation_date = date.today()
-    return description, creation_date
+    return input("Type a new task: ")
     
     
-def insert_task(cursor, conn, description, creation_date):
+def insert_task(cursor, conn, description):
     # insert task on database
-    cursor.execute("INSERT INTO tasks (description, status, creation_date) VALUES (?, ?, ?)", (description, "incomplete", creation_date))
+    cursor.execute("INSERT INTO tasks (description, status, creation_date) VALUES (?, ?, ?)", (description, "incomplete", date.today()))
     conn.commit()
     
 
-def print_new_task(description, date):
+def print_new_task(description):
     # print task
     print("**********************************")
-    print(f"New task sucessfully added:\nDescription: {description} Status: incomplete Creation date: {date}")
+    print(f"New task sucessfully added:\nDescription: {description} Status: incomplete Creation date: {date.today()}")
     print("**********************************")
 
-def view_tasks(cursor):
+def select_all_tasks(cursor):
     # select and store data on a list (data)
     cursor.execute("SELECT * FROM tasks")
-    data = cursor.fetchall()
-    return data
+    return cursor.fetchall()
+
 
 def print_tasks(data):
     # print tasks from database
@@ -207,11 +207,11 @@ def update_description(cursor, conn, new_description, id):
     cursor.execute("UPDATE tasks SET description = ? WHERE task_id = ?", (new_description, id))
     conn.commit()
 
-def select_task(cursor, id):
+def select_one_task(cursor, id):
     cursor.execute("SELECT * FROM tasks WHERE task_id = ?", [id])
     return cursor.fetchone()
 
-def confirm_deletion(data):
+def prompt_delete(data):
     return input(f"Are you sure you want to delete\nId:{data[0]} Description:{data[1]} Status:{data[2]} Creation date:{data[3]}? Y/N: ").lower()
 
 def delete_task(cursor, conn, confirmation, id):
