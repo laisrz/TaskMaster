@@ -19,7 +19,7 @@ def connection():
     connection.close()
 
 
-# for tests that require values inserted in the database
+
 @pytest.fixture
 def setup_db(session): 
     session.execute('''CREATE TABLE tasks (
@@ -40,6 +40,7 @@ def setup_db(session):
 @pytest.mark.usefixtures("setup_db")
 def test_select_all(session):
     result = t.select_all_tasks(session)
+
     assert len(result) == 3
     assert result[0][1] == "Example task"
     assert result[0][2] == "incomplete"
@@ -48,12 +49,14 @@ def test_select_all(session):
 @pytest.mark.usefixtures("setup_db")
 def test_filter_complete_tasks(session):
     result = t.filter_tasks(session, "c")
+
     assert len(result) == 1
     assert result[0][2] == "complete"
 
 @pytest.mark.usefixtures("setup_db")
 def test_filter_incomplete_tasks(session):
     result = t.filter_tasks(session, "i")
+
     assert len(result) == 2
     assert result[0][2] == "incomplete"
 
@@ -63,6 +66,7 @@ def test_update_status(session, connection):
     t.update_status(session, connection, "complete", 1)
     session.execute("SELECT * FROM tasks")
     result = session.fetchall()
+
     assert len(result) == 3
     assert result[0][2] == "complete"
 
@@ -71,16 +75,17 @@ def test_update_description(session, connection):
     t.update_description(session, connection, "new_description", 3)
     session.execute("SELECT * FROM tasks")
     result = session.fetchall()
+    
     assert len(result) == 3
     assert result[2][1] == "new_description"
 
 @pytest.mark.usefixtures("setup_db")
 def test_select_one_task(session):
     result = t.select_one_task(session, 2)
-    assert len(result) == 1
-    assert result[0][1] == "Example task 1"
-    assert result[0][2] == "incomplete"
-    assert result[0][3] == 2023-7-1
+
+    assert result[1] == "Example task 1"
+    assert result[2] == "incomplete"
+    assert result[3] == 2023-7-1
 
 @pytest.mark.usefixtures("setup_db", "connection")
 def test_delete_task(session, connection):
