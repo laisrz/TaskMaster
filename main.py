@@ -15,7 +15,7 @@ def main():
         option = menu()
 
         # create a task
-        if option == "c":
+        if is_create_task(option):
             # prompt task from the user
             new_description = prompt_task()
             # insert task on database
@@ -25,7 +25,7 @@ def main():
 
 
         # view tasks
-        elif option == "v":
+        elif is_view_tasks(option):
             # select and print all tasks
             data = tasks.select_all_tasks(cursor)
             print_tasks(data)
@@ -44,7 +44,7 @@ def main():
                     
 
         # update task status
-        elif option == "u":
+        elif is_update(option):
             #view all tasks
             data = tasks.select_all_tasks(cursor)
             print_tasks(data)
@@ -54,14 +54,14 @@ def main():
 
             # prompt the user for the new status and update database
             new_status = input("Type the new status: ")
-            t.update_status(cursor, conn, new_status, id)
+            tasks.update_status(cursor, conn, new_status, id)
 
             # print success
             print_success("updated")
             
         
         # update task description
-        elif option == "m":
+        elif is_modify(option):
             #view all tasks
             data = tasks.select_all_tasks(cursor)
             print_tasks(data)
@@ -71,14 +71,14 @@ def main():
 
             # prompt the user for the new description and update database
             new_description = input("Type the new description: ")
-            t.update_description(cursor, conn, new_description, id)
+            tasks.update_description(cursor, conn, new_description, id)
 
             # print success
             print_success("updated")
             
 
         # delete task
-        elif option == "d":
+        elif is_delete(option):
             #view all tasks
             data = tasks.select_all_tasks(cursor)
             print_tasks(data)
@@ -100,12 +100,13 @@ def main():
 
 
         # exit
-        elif option == "e":
+        elif is_exit(option):
             break
 
        
     # close connection with database
     conn.close()
+
 
 def menu():
     # display the main menu
@@ -119,6 +120,30 @@ def menu():
     Choose the option you want to run: ").lower()
     
     return option     
+
+
+def is_create_task(option):
+    return option == "c"
+
+
+def is_view_tasks(option):
+    return option == "v"
+
+
+def is_update(option):
+    return option == "u"
+
+
+def is_modify(option):
+    return option == "m"
+
+
+def is_delete(option):
+    return option == "d"
+
+
+def is_exit(option):
+    return option == "e"
 
 
 def prompt_task():
