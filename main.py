@@ -1,5 +1,5 @@
 from datetime import date
-from tasks import tasks as tasks
+from tasks import tasks
 import db as db
 
 def main():
@@ -34,7 +34,7 @@ def main():
             #prompt the user to filter or return
             option = prompt_filter()
             # select data based on the status the user selected
-            if option == "f":
+            if is_filter(option):
                 #prompt the user to choose with filter to use
                 status = prompt_status()
                 data = tasks.filter_tasks(cursor, status)
@@ -90,9 +90,9 @@ def main():
             data = tasks.select_one_task(cursor, id)
             
             # print task to be deleted and prompt the user for confirmation
-            confirmation = prompt_delete(data)
+            option = prompt_delete(data)
             # delete task
-            if confirmation == "y":
+            if is_delete_confirmation(option):
                 tasks.delete_task(cursor, conn, id)
                 print_success("deleted")
             else:
@@ -172,6 +172,10 @@ def prompt_filter():
     return input("Press F to filter this task list or\n Press R to return to main menu: ").lower()
 
 
+def is_filter(option):
+    return option == "f"
+
+
 def prompt_status():
     # prompt user to choose which filter to use
     return input("Press I to filter the task list by incompleted tasks only or\nPress C to filter by completed tasks only: ").lower()
@@ -193,6 +197,9 @@ def prompt_id(cursor, command):
 def prompt_delete(data):
     return input(f"Are you sure you want to delete\nId:{data[0]} Description:{data[1]} Status:{data[2]} Creation date:{data[3]}? Y/N: ").lower()
 
+
+def is_delete_confirmation(option):
+    return option == 'y'
 
 def print_success(command):
     print("**********************************")
