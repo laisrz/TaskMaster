@@ -1,6 +1,7 @@
 import sqlite3
 from datetime import date
-from tasks import tasks as t
+from tasks import tasks
+from classes import options
 
 def main():
 
@@ -21,43 +22,44 @@ def main():
 
     # call menu
     while True:
+
         option = menu()
+        option = options.Option(option) #create object option
 
         # create a task
-        if option == "c":
+        if option.is_create_task():
             # prompt task from the user
             new_description = prompt_task()
             # insert task on database
-            t.insert_task(cursor, conn, new_description)
+            tasks.insert_task(cursor, conn, new_description)
             # print new task added
             print_new_task(new_description)
 
 
         # view tasks
-        elif option == "v":
+        elif option.is_view_tasks():
             # select and print all tasks
-            data = t.select_all_tasks(cursor)
+            data = tasks.select_all_tasks(cursor)
             print_tasks(data)
             
             # filter tasks
             #prompt the user to filter or return
-            option = prompt_filter()
+            option_filter = options.Option(prompt_filter()) #create object
+
             # select data based on the status the user selected
-            if option == "f":
+            if option_filter.is_filter():
                 #prompt the user to choose with filter to use
                 status = prompt_status()
-                data = t.filter_tasks(cursor, status)
+                data = tasks.filter_tasks(cursor, status)
                 print_tasks(data)
             else:
                 menu()
             
-            
-           
 
         # update task status
-        elif option == "u":
+        elif option.is_update():
             #view all tasks
-            data = t.select_all_tasks(cursor)
+            data = tasks.select_all_tasks(cursor)
             print_tasks(data)
             
             # prompt the user for the id of the task to update
@@ -65,16 +67,16 @@ def main():
 
             # prompt the user for the new status and update database
             new_status = input("Type the new status: ")
-            t.update_status(cursor, conn, new_status, id)
+            tasks.update_status(cursor, conn, new_status, id)
 
             # print success
             print_success("updated")
             
         
         # update task description
-        elif option == "m":
+        elif option.is_modify():
             #view all tasks
-            data = t.select_all_tasks(cursor)
+            data = tasks.select_all_tasks(cursor)
             print_tasks(data)
 
             # prompt the user for the id of the task to update
@@ -82,41 +84,43 @@ def main():
 
             # prompt the user for the new description and update database
             new_description = input("Type the new description: ")
-            t.update_description(cursor, conn, new_description, id)
+            tasks.update_description(cursor, conn, new_description, id)
 
             # print success
             print_success("updated")
             
 
         # delete task
-        elif option == "d":
+        elif option.is_delete():
             #view all tasks
-            data = t.select_all_tasks(cursor)
+            data = tasks.select_all_tasks(cursor)
             print_tasks(data)
 
             # prompt the user for the id of the task to update
             id = prompt_id(cursor, "delete")
 
             # select task
-            data = t.select_one_task(cursor, id)
+            data = tasks.select_one_task(cursor, id)
             
             # print task to be deleted and prompt the user for confirmation
-            confirmation = prompt_delete(data)
+            confirm = prompt_delete(data)
+            option = options.Option(confirm) #create object
+
             # delete task
-            if confirmation == "y":
-                t.delete_task(cursor, conn, id)
+            if option.is_confirm_delete():
+                tasks.delete_task(cursor, conn, id)
                 print_success("deleted")
             else:
                 menu()
 
         # exit
-        elif option == "e":
+        elif option.is_exit():
             break
 
        
-
     # close connection with database
     conn.close()
+        
 
 def menu():
     # display the main menu
@@ -183,7 +187,6 @@ def print_success(command):
     print("**********************************")
     print(f"Task sucessfully {command}")
     print("**********************************")
- 
 
 
 if __name__ == '__main__':
