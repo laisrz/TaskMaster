@@ -1,7 +1,7 @@
 import sqlite3
 from datetime import date
-from tasks import tasks
-from classes import options
+from tasks import db_operations
+from classes import task
 
 def main():
 
@@ -24,42 +24,48 @@ def main():
     while True:
 
         option = menu()
-        option = options.Option(option) #create object option
+        
+        actions = {"c": task.create_task, "v": task.view_task, "f": task.filter_task, "u": task.update_status, "m": task.update_description, "d": task.delete, "e": exit}
 
         # create a task
-        if option.is_create_task():
+        if option == "c":
             # prompt task from the user
-            new_description = prompt_task()
-            # insert task on database
-            tasks.insert_task(cursor, conn, new_description)
-            # print new task added
-            print_new_task(new_description)
+            description = prompt_task()
 
+            # call method create_task 
+            actions["c"](description)
 
+            # insert new task into database
+            db_operations.insert_task(cursor, conn, description)
+            print_new_task(description)
+
+   
         # view tasks
-        elif option.is_view_tasks():
+        elif option == "v":
             # select and print all tasks
-            data = tasks.select_all_tasks(cursor)
+            data = actions["v"](cursor)
             print_tasks(data)
-            
-            # filter tasks
-            #prompt the user to filter or return
-            option_filter = options.Option(prompt_filter()) #create object
 
-            # select data based on the status the user selected
-            if option_filter.is_filter():
-                #prompt the user to choose with filter to use
+            #filter tasks
+            #prompt the user to filter or return
+            option_filter = prompt_filter()
+
+            if option_filter == "f":
+                # prompt the user for the new status
                 status = prompt_status()
-                data = tasks.filter_tasks(cursor, status)
+
+                # select data based on the status the user selected
+                data = actions["f"](cursor, status)
                 print_tasks(data)
+
             else:
                 menu()
             
-
+        
         # update task status
-        elif option.is_update():
+        elif option == "u":
             #view all tasks
-            data = tasks.select_all_tasks(cursor)
+            data = actions["v"](cursor)
             print_tasks(data)
             
             # prompt the user for the id of the task to update
@@ -67,16 +73,16 @@ def main():
 
             # prompt the user for the new status and update database
             new_status = input("Type the new status: ")
-            tasks.update_status(cursor, conn, new_status, id)
+            actions["u"](cursor, conn, new_status, id)
 
             # print success
             print_success("updated")
             
         
         # update task description
-        elif option.is_modify():
+        elif option == "m":
             #view all tasks
-            data = tasks.select_all_tasks(cursor)
+            data = actions["v"](cursor)
             print_tasks(data)
 
             # prompt the user for the id of the task to update
@@ -84,37 +90,36 @@ def main():
 
             # prompt the user for the new description and update database
             new_description = input("Type the new description: ")
-            tasks.update_description(cursor, conn, new_description, id)
-
+            actions["m"](cursor, conn, new_description, id)
+            
             # print success
             print_success("updated")
             
 
         # delete task
-        elif option.is_delete():
+        elif option == "d":
             #view all tasks
-            data = tasks.select_all_tasks(cursor)
+            data = actions["v"](cursor)
             print_tasks(data)
 
             # prompt the user for the id of the task to update
             id = prompt_id(cursor, "delete")
 
             # select task
-            data = tasks.select_one_task(cursor, id)
+            data = db_operations.select_one_task(cursor, id)
             
             # print task to be deleted and prompt the user for confirmation
             confirm = prompt_delete(data)
-            option = options.Option(confirm) #create object
 
             # delete task
-            if option.is_confirm_delete():
-                tasks.delete_task(cursor, conn, id)
+            if confirm == "y":
+                actions["d"](cursor, conn, id)
                 print_success("deleted")
             else:
                 menu()
 
         # exit
-        elif option.is_exit():
+        elif option == "e":
             break
 
        

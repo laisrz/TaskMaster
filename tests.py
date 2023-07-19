@@ -1,6 +1,6 @@
 import sqlite3
 import pytest
-from tasks import tasks as t
+from tasks import db_operations
 from datetime import date
 
 # for tests that require a cursor
@@ -39,7 +39,7 @@ def setup_db(session):
 
 @pytest.mark.usefixtures("setup_db")
 def test_select_all(session):
-    result = t.select_all_tasks(session)
+    result = db_operations.select_all_tasks(session)
 
     assert len(result) == 3
     assert result[0][1] == "Example task"
@@ -48,14 +48,14 @@ def test_select_all(session):
 
 @pytest.mark.usefixtures("setup_db")
 def test_filter_complete_tasks(session):
-    result = t.filter_tasks(session, "c")
+    result = db_operations.filter_tasks(session, "c")
 
     assert len(result) == 1
     assert result[0][2] == "complete"
 
 @pytest.mark.usefixtures("setup_db")
 def test_filter_incomplete_tasks(session):
-    result = t.filter_tasks(session, "i")
+    result = db_operations.filter_tasks(session, "i")
 
     assert len(result) == 2
     assert result[0][2] == "incomplete"
@@ -63,7 +63,7 @@ def test_filter_incomplete_tasks(session):
 
 @pytest.mark.usefixtures("setup_db", "connection")
 def test_update_status(session, connection):
-    t.update_status(session, connection, "complete", 1)
+    db_operations.update_status(session, connection, "complete", 1)
     session.execute("SELECT * FROM tasks")
     result = session.fetchall()
 
@@ -72,7 +72,7 @@ def test_update_status(session, connection):
 
 @pytest.mark.usefixtures("setup_db", "connection")
 def test_update_description(session, connection):
-    t.update_description(session, connection, "new_description", 3)
+    db_operations.update_description(session, connection, "new_description", 3)
     session.execute("SELECT * FROM tasks")
     result = session.fetchall()
     
@@ -81,7 +81,7 @@ def test_update_description(session, connection):
 
 @pytest.mark.usefixtures("setup_db")
 def test_select_one_task(session):
-    result = t.select_one_task(session, 2)
+    result = db_operations.select_one_task(session, 2)
 
     assert result[1] == "Example task 1"
     assert result[2] == "incomplete"
@@ -89,7 +89,7 @@ def test_select_one_task(session):
 
 @pytest.mark.usefixtures("setup_db", "connection")
 def test_delete_task(session, connection):
-    t.delete_task(session, connection, 3)
+    db_operations.delete_task(session, connection, 3)
     session.execute("SELECT * FROM tasks")
     result = session.fetchall()
     
@@ -101,7 +101,7 @@ def test_delete_task(session, connection):
 
 @pytest.mark.usefixtures("setup_db", "connection")
 def test_insert_task(session, connection):
-    t.insert_task(session, connection, "Example 3")
+    db_operations.insert_task(session, connection, "Example 3")
     session.execute("SELECT * FROM tasks")
     result = session.fetchall()
     
