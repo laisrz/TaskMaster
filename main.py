@@ -25,7 +25,7 @@ def main():
 
         option = menu()
         
-        actions = {"c": task.create_task, "v": task.view_task, "f": task.filter_task, "u": task.update_status, "m": task.update_description, "d": task.delete, "e": exit}
+        actions = {"c": task.Task.create_task, "v": task.Task.view_task, "f": task.Task.filter_task, "u": task.Task.update_status, "m": task.Task.update_description, "d": task.Task.delete, "e": exit}
 
         # create a task
         if option == "c":
